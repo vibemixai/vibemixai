@@ -145,5 +145,26 @@
 
         fetchTrends();
     </script>
+    <script>// Replace 'YOUR_LASTFM_API_KEY' with the key you just got
+const LASTFM_KEY = '1f0ca1157a8545e42bef725367c2426a';
+
+async function getTrendingMusic() {
+    const url = `https://ws.audioscrobbler.com/2.0/?method=chart.gettoptracks&api_key=${1f0ca1157a8545e42bef725367c2426a}&format=json&limit=10`;
+    
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        // This pulls the top 10 trending songs worldwide
+        return data.tracks.track.map(song => ({
+            title: song.name,
+            artist: song.artist.name
+        }));
+    } catch (error) {
+        console.error("Failed to get trends:", error);
+        return [{ title: "Lofi Study Beats", artist: "Chillhop" }]; // Fallback
+    }
+}</script>
 </body>
+
 </html>
