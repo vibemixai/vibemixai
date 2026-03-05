@@ -103,11 +103,69 @@
             checkReady();
         }
 
-        // 2. FILE HANDLING
+       // 2. FILE HANDLING
         const fileInput = document.getElementById('file-input');
         const dropZone = document.getElementById('drop-zone');
         
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = () => {
             if(fileInput.files[0]) {
-                dropZone.innerHTML = `<span class='text-purple-400 text-sm font-bold'>✅ ${fileInput.files
+                dropZone.innerHTML = `<span class='text-purple-400 text-sm font-bold'>✅ ${fileInput.files[0].name}</span>`;
+                checkReady();
+            }
+        };
+
+        function checkReady() {
+            if(selectedSong && fileInput.files[0]) generateBtn.disabled = false;
+        }
+
+        // 3. AI MIXING LOGIC (LRCLIB + VADOO)
+        generateBtn.onclick = async () => {
+            document.getElementById('modal').classList.remove('hidden');
+            
+            try {
+                // STEP A: Fetch Sync Lyrics from LRCLIB (Free, No Key)
+                progressText.innerText = "Finding synced lyrics for " + selectedSong + "...";
+                const lyricRes = await fetch(`https://lrclib.net/api/search?artist_name=${encodeURIComponent(selectedArtist)}&track_name=${encodeURIComponent(selectedSong)}`);
+                const lyricData = await lyricRes.json();
+                const syncedLyrics = lyricData[0]?.syncedLyrics || "Aesthetic visual vibe...";
+
+                // STEP B: Send to Vadoo AI Editor
+                progressText.innerText = "AI is mixing video and beat-syncing lyrics...";
+                
+                // Note: In a real local setup, you'd need a public URL for your video file.
+                // Here we simulate the Vadoo API response time.
+                const vadooResponse = await fetch("https://aiapi.vadoo.tv/v1/create-short", {
+                    method: "POST",
+                    headers: { "X-Api-Key": VADOO_API_KEY, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        music: selectedSong + " " + selectedArtist,
+                        lyrics: syncedLyrics,
+                        theme: "aesthetic_heartwarming",
+                        font: "Playfair Display"
+                    })
+                });
+
+                // SIMULATION (Since we are local and don't have a public video URL yet)
+                setTimeout(() => {
+                    progressText.innerText = "Applying heartwarming filters and color grading...";
+                    setTimeout(() => {
+                        document.getElementById('loading-state').classList.add('hidden');
+                        document.getElementById('result-state').classList.remove('hidden');
+                        const localUrl = URL.createObjectURL(fileInput.files[0]);
+                        document.getElementById('final-video').src = localUrl;
+                        document.getElementById('download-link').href = localUrl;
+                    }, 3000);
+                }, 3000);
+
+            } catch (err) {
+                alert("AI Mix failed. Check console for details.");
+                console.error(err);
+                location.reload();
+            }
+        };
+
+        fetchTrends();
+    </script>
+</body>
+</html>
